@@ -1,0 +1,78 @@
+variables:
+  DOCKER_DRIVER: overlay
+
+stages:
+ - test
+ - build
+
+inspect:
+  stage: test
+  image: python:3.6
+  script:
+    - pip install -r requirements.txt
+    - flake8
+
+build-master-arm:
+  stage: build
+  tags:
+    - docker
+    - arm
+  image: klud/docker:17.06
+  services:
+    - klud/docker:17.06-dind
+
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:latest" -t "$CI_REGISTRY_IMAGE:arm" --file ./Dockerfile.pi .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
+
+build-arm:
+  stage: build
+  tags:
+    - docker
+    - arm
+  image: klud/docker:17.06
+  services:
+    - klud/docker:17.06-dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-arm" --file ./Dockerfile.pi .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-arm"
+  except:
+    - master
+
+build-master-x64:
+  stage: build
+  tags:
+    - docker
+    - linux
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:x64" --file ./Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE:x64"
+  only:
+    - master
+
+build-x64:
+  stage: build
+  tags:
+    - docker
+    - linux
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-x64" --file ./Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-x64"
+  except:
+    - master

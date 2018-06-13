@@ -1,0 +1,11 @@
+pymongo==3.6.1
+click==6.7
+requests==2.18.4
+apscheduler==3.5.1
+
+# clashroyale dependencies aren't correct on PyPi, so fix them here
+clashroyale
+aiohttp==3.3.0
+python-box==3.2.0
+
+flake8
