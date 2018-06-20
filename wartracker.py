@@ -3,7 +3,6 @@ import datetime
 import logging
 import os
 
-import clashroyale
 import click
 import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -101,9 +100,9 @@ class RoyaleAPI:
     def set_key(cls, key):
         cls.KEY = key
 
-    @classmethod
-    def client(cls):
-        return clashroyale.Client(cls.KEY)
+    # @classmethod
+    # def client(cls):
+    #     return clashroyale.Client(cls.KEY)
 
 
 def track_war(clantag, db):
