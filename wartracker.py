@@ -55,6 +55,14 @@ class Scheduler:
                                id='track_war_battles',
                                name='Track war battles')
 
+        self.scheduler.add_job(track_clan, 'interval', args=[self.clan_tag, self.db],
+                               next_run_time=datetime.datetime.now(),
+                               minutes=30,
+                               # jitter=350,
+                               timezone='America/Denver',
+                               id='track_clan',
+                               name='Track clan data')
+
     def war_tracking(self):
         current_war = track_war(self.clan_tag, self.db)
 
@@ -122,6 +130,18 @@ def track_war_battles(clantag, db):
     battles = r.json()
 
     db.add_war_battles(battles)
+
+
+def track_clan(clantag, db):
+    url = 'https://api.royaleapi.com/clan/{}'.format(clantag)
+    headers = {'auth': RoyaleAPI.KEY}
+
+    r = requests.get(url, headers=headers)
+    r.raise_for_status()
+
+    clan = r.json()
+
+    db.add_clan(clan)
 
 
 @click.command('waranalysis')

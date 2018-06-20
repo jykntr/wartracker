@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
@@ -5,6 +7,9 @@ COLLECTION_DAY = 'collectionDay'
 WAR_DAY = 'warDay'
 
 WARTRACKER_ID = '_wartracker_id'
+UPDATE_TIMESTAMP = '_update_timestamp'
+UPDATE_DATE_STRING = '_update_date_string'
+UPDATE_UTC_DATE_STRING = '_update_utc_date_string'
 
 
 class DB():
@@ -20,6 +25,7 @@ class DB():
         self.database = self.client.clashtracker
         self.war = self.database.war
         self.war_battles = self.database.war_battles
+        self.clan = self.database.clan
 
         self.war.create_index(WARTRACKER_ID, name=WARTRACKER_ID, unique=True)
         self.war_battles.create_index([('utcTime', ASCENDING), ('team.tag', ASCENDING)], unique=True)
@@ -39,6 +45,9 @@ class DB():
 
         # Make our own id field to use for filtering & ensuring uniqueness
         document[WARTRACKER_ID] = wartracker_id
+        document[UPDATE_TIMESTAMP] = datetime.utcnow().timestamp()
+        document[UPDATE_DATE_STRING] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        document[UPDATE_UTC_DATE_STRING] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
 
         filter = {}
         filter[WARTRACKER_ID] = wartracker_id
@@ -53,3 +62,9 @@ class DB():
                     print(results)
                 except DuplicateKeyError:
                     pass
+
+    def add_clan(self, document):
+        document[UPDATE_TIMESTAMP] = datetime.utcnow().timestamp()
+        document[UPDATE_DATE_STRING] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        document[UPDATE_UTC_DATE_STRING] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+        return self.clan.insert_one(document)
