@@ -1,9 +1,9 @@
 import asyncio
-import datetime
 import logging
 import os
 
 import click
+import pendulum
 import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -43,22 +43,22 @@ class Scheduler:
         # track the war once per hour starting now
         self.scheduler.add_job(self.war_tracking,
                                'interval',
-                               next_run_time=datetime.datetime.now(),
+                               next_run_time=pendulum.now(tz='UTC'),
                                minutes=60,
-                               timezone='America/Denver')
+                               timezone='UTC')
 
         self.scheduler.add_job(track_war_battles, 'interval', args=[self.clan_tag, self.db],
-                               next_run_time=datetime.datetime.now(),
+                               next_run_time=pendulum.now('UTC'),
                                minutes=30,
-                               timezone='America/Denver',
+                               timezone='UTC',
                                id='track_war_battles',
                                name='Track war battles')
 
         self.scheduler.add_job(track_clan, 'interval', args=[self.clan_tag, self.db],
-                               next_run_time=datetime.datetime.now(),
+                               next_run_time=pendulum.now('UTC'),
                                minutes=30,
                                # jitter=350,
-                               timezone='America/Denver',
+                               timezone='UTC',
                                id='track_clan',
                                name='Track clan data')
 
@@ -70,12 +70,12 @@ class Scheduler:
 
     def schedule_end_of_war_jobs(self, war):
         war_end_timestamp = war.get('collectionEndTime', None) or war.get('warEndTime', None)
-        war_end_date = datetime.datetime.utcfromtimestamp(war_end_timestamp)
+        war_end_date = pendulum.from_timestamp(war_end_timestamp, tz='UTC')
 
         t_minus_jobs = [1, 3, 5, 10, 20, 30]
         for t_minus in t_minus_jobs:
-            id = self.get_job_id(war, 'Tminus{}'.format(t_minus))
-            schedule_time = war_end_date - datetime.timedelta(minutes=t_minus)
+            schedule_time = war_end_date.subtract(minutes=t_minus)
+            id = self.get_job_id(war, 'Tminus{}-{:.0f}'.format(t_minus, schedule_time.timestamp()))
             self.schedule_war_job(schedule_time, id, 'End of war job for {}'.format(id))
 
         print(self.scheduler.get_jobs())

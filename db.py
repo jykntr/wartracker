@@ -45,9 +45,7 @@ class DB():
 
         # Make our own id field to use for filtering & ensuring uniqueness
         document[WARTRACKER_ID] = wartracker_id
-        document[UPDATE_TIMESTAMP] = datetime.utcnow().timestamp()
-        document[UPDATE_DATE_STRING] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-        document[UPDATE_UTC_DATE_STRING] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+        self.add_timestamps(document)
 
         filter = {}
         filter[WARTRACKER_ID] = wartracker_id
@@ -58,13 +56,19 @@ class DB():
         for battle in document:
             if battle['type'].startswith('clanWar'):
                 try:
+                    self.add_timestamps(battle)
                     results = self.war_battles.insert_one(battle)
                     print(results)
                 except DuplicateKeyError:
                     pass
 
     def add_clan(self, document):
-        document[UPDATE_TIMESTAMP] = datetime.utcnow().timestamp()
-        document[UPDATE_DATE_STRING] = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-        document[UPDATE_UTC_DATE_STRING] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')
+        self.add_timestamps(document)
         return self.clan.insert_one(document)
+
+    def add_timestamps(self, document):
+        document[UPDATE_TIMESTAMP] = int(datetime.utcnow().timestamp())
+        document[UPDATE_DATE_STRING] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        document[UPDATE_UTC_DATE_STRING] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+        return document
