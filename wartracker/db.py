@@ -1,4 +1,5 @@
 import pendulum
+import pymongo
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
 
@@ -13,6 +14,7 @@ END_DATE_UTC = '_end_date_utc'
 END_DATE_LOCAL = '_end_date_local'
 BATTLE_DATE_UTC = '_battle_date_utc'
 BATTLE_DATE_LOCAL = '_battle_date_local'
+WAR_LOG_CHANNEL_ID = '_war_log_channel_id'
 
 
 class DB:
@@ -24,6 +26,7 @@ class DB:
         self.war = None
         self.war_battles = None
         self.clan = None
+        self.war_log_channels = None
 
     def connect(self):
         self.client = MongoClient(self.uri)
@@ -31,9 +34,11 @@ class DB:
         self.war = self.database.war
         self.war_battles = self.database.war_battles
         self.clan = self.database.clan
+        self.war_log_channels = self.database.war_log_channels
 
         self.war.create_index(WARTRACKER_ID, name=WARTRACKER_ID, unique=True)
         self.war_battles.create_index([('utcTime', ASCENDING), ('team.tag', ASCENDING)], unique=True)
+        self.war_log_channels.create_index(WAR_LOG_CHANNEL_ID, name=WAR_LOG_CHANNEL_ID, unique=True)
 
     def add_current_war_document(self, document):
         # Get the time that War/Collection day ends
@@ -66,6 +71,7 @@ class DB:
         print('{} {}'.format(results.matched_count, results.modified_count))
 
     def add_war_battles(self, document):
+        added_battles = []
         for battle in document:
             if battle['type'].startswith('clanWar'):
                 try:
@@ -80,13 +86,43 @@ class DB:
 
                     # Attempt to add the document
                     results = self.war_battles.insert_one(battle)
+                    if results.acknowledged:
+                        added_battles.append(battle)
+
+                    # if results show it was added, return the added battles to a list
                     print(results)
                 except DuplicateKeyError:
                     pass
 
+        return added_battles
+
     def add_clan(self, document):
         self.add_timestamps(document)
         return self.clan.insert_one(document)
+
+    def set_war_log_channel(self, clan_tag, channel_id):
+        document = {'clan_tag': clan_tag,
+                    'channel_id': channel_id,
+                    WAR_LOG_CHANNEL_ID: clan_tag,
+                    }
+
+        id_filter = {WAR_LOG_CHANNEL_ID: clan_tag}
+        self.war_log_channels.replace_one(id_filter, document, upsert=True)
+
+    def get_war_log_channel(self, clan_tag):
+        return 330528722211962880
+
+    def get_latest_collection_day(self):
+        document = self.war.find_one({'state': 'collectionDay'}, sort=[('$natural', pymongo.DESCENDING)])
+        return document
+
+    def get_latest_war_day(self):
+        document = self.war.find_one({'state': 'warDay'}, sort=[('$natural', pymongo.DESCENDING)])
+        return document
+
+    def get_latest_war(self):
+        document = self.war.find_one(sort=[('$natural', pymongo.DESCENDING)])
+        return document
 
     @staticmethod
     def add_timestamps(document):
