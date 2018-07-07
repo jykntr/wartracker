@@ -1,7 +1,11 @@
+import logging
+
 import pendulum
 import pymongo
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import DuplicateKeyError
+
+log = logging.getLogger(__name__)
 
 COLLECTION_DAY = 'collectionDay'
 WAR_DAY = 'warDay'
@@ -42,13 +46,17 @@ class DB:
 
     def add_current_war_document(self, document):
         # Get the time that War/Collection day ends
-        if document['state'] == WAR_DAY:
-            end_timestamp = document['warEndTime']
-        elif document['state'] == COLLECTION_DAY:
-            end_timestamp = document['collectionEndTime']
-        else:
-            # If this isn't a War/Collection day, just skip it
-            return None
+        try:
+            if document['state'] == WAR_DAY:
+                end_timestamp = document['warEndTime']
+            elif document['state'] == COLLECTION_DAY:
+                end_timestamp = document['collectionEndTime']
+            else:
+                # If this isn't a War/Collection day, just skip it
+                return None
+        except KeyError:
+            log.exception('Unknown document...')
+            log.debug(document)
 
         # Make our own id field to use for filtering & ensuring uniqueness and add it to the document
         wartracker_id = '{}_{}_{}'.format(document['clan']['tag'],

@@ -1,4 +1,8 @@
+import logging
+
 import aiohttp
+
+log = logging.getLogger(__name__)
 
 
 class Tracker:
@@ -28,7 +32,12 @@ class Tracker:
 
         async with aiohttp.ClientSession(trust_env=True) as cs:
             async with cs.get(url, headers=headers) as r:
-                battles = await r.json()
+                try:
+                    battles = await r.json()
+                except aiohttp.client_exceptions.ContentTypeError:
+                    log.exception('Problem converting war battles to JSON.')
+                    log.debug(r)
+                    return
 
         new_battles = db.add_war_battles(battles)
 

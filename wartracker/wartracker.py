@@ -14,8 +14,8 @@ from wartracker.db import DB
 from .scheduler import Scheduler
 from .tracker import Tracker
 
-logging.basicConfig(level=os.getenv("LOG_LEVEL", logging.DEBUG),
-                    format='%(asctime)s:%(levelname)s:%(module)s:%(funcName)s:%(lineno)d - %(message)s')
+logging.basicConfig(level=os.getenv('LOG_LEVEL', logging.DEBUG),
+                    format='%(asctime)s:%(levelname)s:%(module)s:%(module)s:%(funcName)s:%(lineno)d - %(message)s')
 
 log = logging.getLogger(__name__)
 logging.getLogger('discord').setLevel(logging.INFO)
