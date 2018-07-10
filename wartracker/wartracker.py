@@ -9,8 +9,10 @@ import discord
 import pendulum
 from discord.ext import commands
 
-from wartracker import tags
-from wartracker.db import DB
+from . import emoji_util
+from . import tags
+from .db import DB
+from .emoji import emojis
 from .scheduler import Scheduler
 from .tracker import Tracker
 
@@ -105,8 +107,9 @@ class WarLog:
         else:
             possible_battles = participants * 3
 
-        line = '{} participants - {} wins, {} of {} battles played'.format(participants, wins, battles,
-                                                                           possible_battles)
+        line = '{} {} participants\n'.format(emojis['participant'], participants)
+        line += '{} {} wins\n'.format(emojis['warwin'], wins)
+        line += '{} {} of {} battles played'.format(emojis['battle'], battles, possible_battles)
 
         embed.add_field(name='Summary', value=line, inline=False)
 
@@ -120,9 +123,9 @@ class WarLog:
         for participant in war['participants']:
             if participant['wins'] == 3:
                 perfect_day_count = perfect_day_count + 1
-                line = '`{:02d}. {:<15} {:>4} {:>5}`'.format(perfect_day_count, participant['name'],
-                                                             participant['wins'],
-                                                             participant['cardsEarned'])
+                line = '`{:02d}. {:<15} {:>4} {:>5} {}`'.format(perfect_day_count, participant['name'],
+                                                                participant['wins'], participant['cardsEarned'],
+                                                                emoji_util.get_good_emote())
                 lines.append(line)
 
         if len(lines) > 0:
@@ -143,7 +146,8 @@ class WarLog:
         for participant in war['participants']:
             if participant['wins'] > 1:
                 double_wins = double_wins + 1
-                line = '`{:02d}. {:<15} {:>4}`'.format(double_wins, participant['name'], participant['wins'])
+                line = '`{:02d}. {:<15} {:>4}` {}'.format(double_wins, participant['name'], participant['wins'],
+                                                          emoji_util.get_good_emote())
                 lines.append(line)
 
         if len(lines) > 0:
@@ -166,11 +170,11 @@ class WarLog:
             if participant['battlesPlayed'] < expected_battles:
                 shame_count = shame_count + 1
                 if WarLog.is_war_day(war):
-                    line = '`{:02d}. {:<15}`'.format(shame_count, participant['name'])
+                    line = '`{:02d}. {:<15}`'.format(shame_count, participant['name'], emoji_util.get_bad_emote())
                 else:
                     count = '{} of {}'.format(participant['battlesPlayed'], expected_battles)
                     line = '`{:02d}. {:<15} {:^14}`'.format(shame_count, participant['name'], count)
-                lines.append(line)
+                lines.append(line + ' {}'.format(emoji_util.get_bad_emote()))
 
         if len(lines) > 0:
             if WarLog.is_war_day(war):
