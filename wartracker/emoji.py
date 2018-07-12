@@ -129,4 +129,5 @@ emojis = {
     'participant': '<:participant:466098401227046933>',
     'battle': '<:battle:466098401323253761>',
     'warwin': '<:warwin:466098401767850004>',
+    'cards': '<:cards:466483721181069312>',
 }

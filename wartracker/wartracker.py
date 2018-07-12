@@ -38,6 +38,67 @@ def validate_player_tag_input(ctx, param, value):
     return tag
 
 
+class War:
+    def __init__(self, war_json):
+        self.json = war_json
+
+    def is_war_day(self):
+        return 'warEndTime' in self.json
+
+    def is_collection_day(self):
+        return 'collectionEndTime' in self.json
+
+    @property
+    def clan_name(self):
+        return self.json['clan']['name']
+
+    @property
+    def clan_tag(self):
+        return self.json['clan']['tag']
+
+    @property
+    def clan_badge(self):
+        return self.json['clan']['badge']['image']
+
+    @property
+    def participant_count(self):
+        return self.json['clan']['participants']
+
+    @property
+    def wins(self):
+        return self.json['clan']['wins']
+
+    @property
+    def possible_battles(self):
+        if self.is_war_day():
+            return max(self.participant_count, self.battles_played)
+        else:
+            return self.participant_count * 3
+
+    @property
+    def battles_played(self):
+        return self.json['clan']['battlesPlayed']
+
+    @property
+    def update_time(self):
+        return pendulum.from_timestamp(self.json['_update_utc_timestamp'])
+
+    @property
+    def end_time(self):
+        if self.is_war_day():
+            return pendulum.from_timestamp(self.json['warEndTime'])
+        else:
+            return pendulum.from_timestamp(self.json['collectionEndTime'])
+
+    @property
+    def total_cards_earned(self):
+        cards_earned = 0
+        for participant in self.json['participants']:
+            cards_earned = cards_earned + participant['cardsEarned']
+
+        return cards_earned
+
+
 class WarLog:
     """War log commands"""
 
@@ -99,19 +160,23 @@ class WarLog:
 
     @staticmethod
     def add_summary_line(embed, war):
-        participants = war['clan']['participants']
-        wins = war['clan']['wins']
-        battles = war['clan']['battlesPlayed']
-        if WarLog.is_war_day(war):
-            possible_battles = max(participants, battles)
-        else:
-            possible_battles = participants * 3
+        mywar = War(war)
 
-        line = '{} {} participants\n'.format(emojis['participant'], participants)
-        line += '{} {} wins\n'.format(emojis['warwin'], wins)
-        line += '{} {} of {} battles played'.format(emojis['battle'], battles, possible_battles)
-
-        embed.add_field(name='Summary', value=line, inline=False)
+        embed.add_field(name='Participants',
+                        value='{} {}'.format(emojis['participant'], mywar.participant_count),
+                        inline=True)
+        embed.add_field(name='Wins',
+                        value='{} {}'.format(emojis['warwin'], mywar.wins),
+                        inline=True)
+        embed.add_field(name='Battles played',
+                        value='{} {}/{}'.format(emojis['battle'], mywar.battles_played, mywar.possible_battles),
+                        inline=True)
+        embed.add_field(name='Cards collected',
+                        value='{} {}'.format(emojis['cards'], mywar.total_cards_earned),
+                        inline=True)
+        embed.add_field(name='Average cards per player',
+                        value='{} {:.0f}'.format(emojis['cards'], mywar.total_cards_earned / mywar.participant_count),
+                        inline=True)
 
     @staticmethod
     def add_perfect_days(embed, war):
@@ -129,7 +194,7 @@ class WarLog:
                 lines.append(line)
 
         if len(lines) > 0:
-            lines.insert(0, '`{:<2}  {:^15} {:^4} {:^5}`'.format('##', 'Name', 'Wins', 'Cards'))
+            lines.insert(0, '`{:<2}  {:<15} {:^4} {:^5}`'.format('##', 'Name', 'Wins', 'Cards'))
             text = '\n'.join(lines)
         else:
             text = 'No perfect collection days!  :('
@@ -151,7 +216,7 @@ class WarLog:
                 lines.append(line)
 
         if len(lines) > 0:
-            lines.insert(0, '`{:<2}  {:^15} {:^4}`'.format('##', 'Name', 'Wins'))
+            lines.insert(0, '`{:<2}  {:<15} {:^4}`'.format('##', 'Name', 'Wins'))
             text = '\n'.join(lines)
             embed.add_field(name='MVPs - Double War Day Wins', value=text, inline=False)
 
@@ -178,9 +243,9 @@ class WarLog:
 
         if len(lines) > 0:
             if WarLog.is_war_day(war):
-                lines.insert(0, '`{:<2}  {:^15}`'.format('##', 'Name'))
+                lines.insert(0, '`{:<2}  {:<15}`'.format('##', 'Name'))
             else:
-                lines.insert(0, '`{:<2}  {:^15} {:^14}`'.format('##', 'Name', 'Battles Played'))
+                lines.insert(0, '`{:<2}  {:<15} {:^14}`'.format('##', 'Name', 'Battles Played'))
 
             text = '\n'.join(lines)
         else:

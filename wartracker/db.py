@@ -53,10 +53,11 @@ class DB:
                 end_timestamp = document['collectionEndTime']
             else:
                 # If this isn't a War/Collection day, just skip it
-                return None
+                return
         except KeyError:
             log.exception('Unknown document...')
             log.debug(document)
+            return
 
         # Make our own id field to use for filtering & ensuring uniqueness and add it to the document
         wartracker_id = '{}_{}_{}'.format(document['clan']['tag'],
