@@ -108,8 +108,12 @@ class WarLog:
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def setwarlog(self, ctx, *, channel: discord.TextChannel):
-        log.debug('Setting war log to: {}, {}.'.format(channel.name, channel.id))
-        self.bot.db.set_war_log_channel('GJ98VC', channel.id)
+        log.debug('Setting war log to: {}, {}, {}, {}, {}.'.format('GJ98VC',
+                                                                   channel.guild.name,
+                                                                   channel.name,
+                                                                   channel.guild.id,
+                                                                   channel.id))
+        self.bot.db.set_war_log_channel('GJ98VC', channel.guild.id, channel.id)
 
     @setwarlog.error
     async def setwarlog_error(self, ctx, error):
@@ -117,6 +121,7 @@ class WarLog:
             await ctx.send(error)
         else:
             log.debug('Error setting')
+            log.debug(error)
 
     async def send_war_battle(self, battle):
         log.debug('{}?type=war'.format(battle['team'][0]['deckLink']))
@@ -188,7 +193,7 @@ class WarLog:
         for participant in war['participants']:
             if participant['wins'] == 3:
                 perfect_day_count = perfect_day_count + 1
-                line = '`{:02d}. {:<15} {:>4} {:>5} {}`'.format(perfect_day_count, participant['name'],
+                line = '`{:02d}. {:<15} {:>4} {:>5}` {}'.format(perfect_day_count, participant['name'],
                                                                 participant['wins'], participant['cardsEarned'],
                                                                 emoji_util.get_good_emote())
                 lines.append(line)

@@ -18,7 +18,6 @@ END_DATE_UTC = '_end_date_utc'
 END_DATE_LOCAL = '_end_date_local'
 BATTLE_DATE_UTC = '_battle_date_utc'
 BATTLE_DATE_LOCAL = '_battle_date_local'
-WAR_LOG_CHANNEL_ID = '_war_log_channel_id'
 
 
 class DB:
@@ -42,7 +41,7 @@ class DB:
 
         self.war.create_index(WARTRACKER_ID, name=WARTRACKER_ID, unique=True)
         self.war_battles.create_index([('utcTime', ASCENDING), ('team.tag', ASCENDING)], unique=True)
-        self.war_log_channels.create_index(WAR_LOG_CHANNEL_ID, name=WAR_LOG_CHANNEL_ID, unique=True)
+        self.war_log_channels.create_index([('clan', ASCENDING), ('server', ASCENDING)], unique=True)
 
     def add_current_war_document(self, document):
         # Get the time that War/Collection day ends
@@ -109,15 +108,6 @@ class DB:
         self.add_timestamps(document)
         return self.clan.insert_one(document)
 
-    def set_war_log_channel(self, clan_tag, channel_id):
-        document = {'clan_tag': clan_tag,
-                    'channel_id': channel_id,
-                    WAR_LOG_CHANNEL_ID: clan_tag,
-                    }
-
-        id_filter = {WAR_LOG_CHANNEL_ID: clan_tag}
-        self.war_log_channels.replace_one(id_filter, document, upsert=True)
-
     def get_war_log_channel(self, clan_tag):
         return 330528722211962880
 
@@ -142,3 +132,9 @@ class DB:
         document[UPDATE_LOCAL_DATE_STRING] = local_date.to_datetime_string()
 
         return document
+
+    def set_war_log_channel(self, clantag, server_id, channel_id):
+        document = {'clan': clantag, 'server': server_id, 'channel': channel_id}
+        filter = {'clan': clantag, 'server': server_id}
+
+        self.war_log_channels.replace_one(filter, document, upsert=True)
