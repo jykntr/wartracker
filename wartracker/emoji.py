@@ -130,4 +130,6 @@ emojis = {
     'battle': '<:battle:466098401323253761>',
     'warwin': '<:warwin:466098401767850004>',
     'cards': '<:cards:466483721181069312>',
+    'wartrophy': '<:wartrophy:468143048237383682>',
+    'crownblue': '<:crownblue:468143227220787211>',
 }
