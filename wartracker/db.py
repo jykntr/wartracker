@@ -111,9 +111,6 @@ class DB:
         self.add_timestamps(document)
         return self.clan.insert_one(document)
 
-    def get_war_log_channel(self, clan_tag):
-        return 330528722211962880
-
     def get_latest_collection_day(self):
         document = self.war.find_one({'state': 'collectionDay'}, sort=[('$natural', pymongo.DESCENDING)])
         return document
@@ -141,3 +138,10 @@ class DB:
         filter = {'clan': clantag, 'server': server_id}
 
         self.war_log_channels.replace_one(filter, document, upsert=True)
+
+    def get_war_log_channels(self, clantag):
+        channels = []
+        for war_log_channel in self.war_log_channels.find({'clan': clantag}):
+            channels.append(war_log_channel['channel'])
+
+        return channels

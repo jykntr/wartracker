@@ -160,10 +160,13 @@ class WarLog:
         return embed
 
     async def war_summary_auto(self, clantag):
-        channel_id = self.bot.db.get_war_log_channel(clantag)
-        channel = self.bot.get_channel(channel_id)
-        if channel:
-            await channel.send(embed=self.create_war_summary())
+        channel_ids = self.bot.db.get_war_log_channels(clantag)
+        embed = self.create_war_summary()
+
+        for channel_id in channel_ids:
+            channel = self.bot.get_channel(channel_id)
+            if channel:
+                await channel.send(embed=embed)
 
     @commands.command(name='warsum')
     async def war_summary_command(self, ctx):
