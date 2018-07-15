@@ -93,10 +93,14 @@ class War:
     @property
     def total_cards_earned(self):
         cards_earned = 0
-        for participant in self.json['participants']:
+        for participant in self.participants:
             cards_earned = cards_earned + participant['cardsEarned']
 
         return cards_earned
+
+    @property
+    def participants(self):
+        return self.json['participants']
 
 
 class WarLog:
@@ -131,7 +135,7 @@ class WarLog:
             await channel.send('{}'.format(battle['team'][0]['deckLink']))
 
     def create_war_summary(self):
-        war = self.bot.db.get_latest_war()
+        war = War(self.bot.db.get_latest_war())
 
         embed = discord.Embed(color=0x8000ff)
         WarLog.set_author(embed, war)
@@ -155,42 +159,40 @@ class WarLog:
 
     @staticmethod
     def set_author(embed, war):
-        if WarLog.is_war_day(war):
-            name = '{} {}'.format(war['clan']['name'], 'War Day')
+        if war.is_war_day():
+            name = '{} {}'.format(war.clan_name, 'War Day')
         else:
-            name = '{} {}'.format(war['clan']['name'], 'Collection Day')
+            name = '{} {}'.format(war.clan_name, 'Collection Day')
 
-        embed.set_author(name=name, url='http://royaleapi.com/clan/{}/'.format(war['clan']['tag']),
-                         icon_url=war['clan']['badge']['image'])
+        embed.set_author(name=name, url='http://royaleapi.com/clan/{}/'.format(war.clan_tag),
+                         icon_url=war.clan_badge)
 
     @staticmethod
     def add_summary_line(embed, war):
-        mywar = War(war)
-
         embed.add_field(name='Participants',
-                        value='{} {}'.format(emojis['participant'], mywar.participant_count),
+                        value='{} {}'.format(emojis['participant'], war.participant_count),
                         inline=True)
         embed.add_field(name='Wins',
-                        value='{} {}'.format(emojis['warwin'], mywar.wins),
+                        value='{} {}'.format(emojis['warwin'], war.wins),
                         inline=True)
         embed.add_field(name='Battles played',
-                        value='{} {}/{}'.format(emojis['battle'], mywar.battles_played, mywar.possible_battles),
+                        value='{} {}/{}'.format(emojis['battle'], war.battles_played, war.possible_battles),
                         inline=True)
         embed.add_field(name='Cards collected',
-                        value='{} {}'.format(emojis['cards'], mywar.total_cards_earned),
+                        value='{} {}'.format(emojis['cards'], war.total_cards_earned),
                         inline=True)
         embed.add_field(name='Average cards per player',
-                        value='{} {:.0f}'.format(emojis['cards'], mywar.total_cards_earned / mywar.participant_count),
+                        value='{} {:.0f}'.format(emojis['cards'], war.total_cards_earned / war.participant_count),
                         inline=True)
 
     @staticmethod
     def add_perfect_days(embed, war):
-        if WarLog.is_war_day(war):
+        if war.is_war_day():
             return
 
         lines = []
         perfect_day_count = 0
-        for participant in war['participants']:
+        for participant in war.participants:
             if participant['wins'] == 3:
                 perfect_day_count = perfect_day_count + 1
                 line = '`{:02d}. {:<15} {:>4} {:>5}` {}'.format(perfect_day_count, participant['name'],
@@ -208,12 +210,12 @@ class WarLog:
 
     @staticmethod
     def add_double_final_battle_wins(embed, war):
-        if not WarLog.is_war_day(war):
+        if not war.is_war_day():
             return
 
         lines = []
         double_wins = 0
-        for participant in war['participants']:
+        for participant in war.participants:
             if participant['wins'] > 1:
                 double_wins = double_wins + 1
                 line = '`{:02d}. {:<15} {:>4}` {}'.format(double_wins, participant['name'], participant['wins'],
@@ -227,7 +229,7 @@ class WarLog:
 
     @staticmethod
     def add_wall_of_shame(embed, war):
-        if WarLog.is_war_day(war):
+        if war.is_war_day():
             expected_battles = 1
             name = 'Wall of Shame - Missed final battles:'
         else:
@@ -236,10 +238,10 @@ class WarLog:
 
         lines = []
         shame_count = 0
-        for participant in war['participants']:
+        for participant in war.participants:
             if participant['battlesPlayed'] < expected_battles:
                 shame_count = shame_count + 1
-                if WarLog.is_war_day(war):
+                if war.is_war_day():
                     line = '`{:02d}. {:<15}`'.format(shame_count, participant['name'], emoji_util.get_bad_emote())
                 else:
                     count = '{} of {}'.format(participant['battlesPlayed'], expected_battles)
@@ -247,7 +249,7 @@ class WarLog:
                 lines.append(line + ' {}'.format(emoji_util.get_bad_emote()))
 
         if len(lines) > 0:
-            if WarLog.is_war_day(war):
+            if war.is_war_day():
                 lines.insert(0, '`{:<2}  {:<15}`'.format('##', 'Name'))
             else:
                 lines.insert(0, '`{:<2}  {:<15} {:^14}`'.format('##', 'Name', 'Battles Played'))
@@ -260,21 +262,13 @@ class WarLog:
 
     @staticmethod
     def add_footer(embed, war):
-        update_time = pendulum.from_timestamp(war['_update_utc_timestamp'])
-
-        if WarLog.is_war_day(war):
-            end_time = pendulum.from_timestamp(war['warEndTime'])
-        else:
-            end_time = pendulum.from_timestamp(war['collectionEndTime'])
+        update_time = war.update_time
+        end_time = war.end_time
 
         end_string = end_time.in_timezone('America/Denver').format('dddd, MMMM Do @ h:mm A zz')
         footer = '* Ended {} - last updated {} end time.'.format(end_string, update_time.diff_for_humans(end_time))
 
         embed.set_footer(text=footer)
-
-    @staticmethod
-    def is_war_day(war):
-        return 'warEndTime' in war
 
 
 @click.command()
