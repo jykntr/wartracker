@@ -81,8 +81,8 @@ class DB:
     def add_war_battles(self, document):
         added_battles = []
         for battle in document:
-            if battle['type'].startswith('clanWar'):
-                try:
+            try:
+                if battle['type'].startswith('clanWar'):
                     # Add timestamps for update
                     self.add_timestamps(battle)
 
@@ -93,14 +93,17 @@ class DB:
                     battle[BATTLE_DATE_LOCAL] = local_battle_date.to_datetime_string()
 
                     # Attempt to add the document
-                    results = self.war_battles.insert_one(battle)
-                    if results.acknowledged:
-                        added_battles.append(battle)
+                    try:
+                        results = self.war_battles.insert_one(battle)
+                        if results.acknowledged:
+                            added_battles.append(battle)
 
-                    # if results show it was added, return the added battles to a list
-                    print(results)
-                except DuplicateKeyError:
-                    pass
+                        # if results show it was added, return the added battles to a list
+                        print(results)
+                    except DuplicateKeyError:
+                        pass
+            except TypeError:
+                log.exception('Malformed Battle: {}'.format(battle))
 
         return added_battles
 
