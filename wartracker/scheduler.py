@@ -21,16 +21,16 @@ class Scheduler:
         self.scheduler.start()
 
     def start_scheduler(self) -> None:
-        # track the war once per hour starting now
+        # track the war once per hour starting now-ish
         self.scheduler.add_job(self.war_tracking,
                                'interval',
-                               next_run_time=pendulum.now(tz='UTC'),
+                               next_run_time=pendulum.now(tz='UTC').add(seconds=5),
                                minutes=60,
                                misfire_grace_time=30,
                                timezone='UTC')
 
         self.scheduler.add_job(Tracker.track_war_battles, 'interval', args=[self.clan_tag, self.db, self.bot],
-                               next_run_time=pendulum.now('UTC'),
+                               next_run_time=pendulum.now('UTC').add(seconds=3),
                                minutes=30,
                                misfire_grace_time=30,
                                timezone='UTC',
@@ -38,13 +38,22 @@ class Scheduler:
                                name='Track war battles')
 
         self.scheduler.add_job(Tracker.track_clan, 'interval', args=[self.clan_tag, self.db],
-                               next_run_time=pendulum.now('UTC'),
+                               next_run_time=pendulum.now('UTC').add(seconds=2),
                                minutes=30,
                                misfire_grace_time=30,
                                # jitter=350,
                                timezone='UTC',
                                id='track_clan',
                                name='Track clan data')
+
+        self.scheduler.add_job(Tracker.track_war_logs, 'interval', args=[self.clan_tag, self.db],
+                               next_run_time=pendulum.now('UTC').add(seconds=60),
+                               hours=1,
+                               misfire_grace_time=30,
+                               # jitter=350,
+                               timezone='UTC',
+                               id='track_war_logs',
+                               name='Track war logs')
 
     async def war_tracking(self):
         current_war = await Tracker.track_war(self.clan_tag, self.db)

@@ -15,11 +15,8 @@ class Tracker:
     @classmethod
     async def track_war(cls, clantag, db):
         url = 'https://api.royaleapi.com/clan/{}/war'.format(clantag)
-        headers = {'auth': cls.KEY}
 
-        async with aiohttp.ClientSession(trust_env=True) as cs:
-            async with cs.get(url, headers=headers) as r:
-                current_war = await r.json()
+        current_war = await Tracker._make_call(url)
 
         db.add_current_war_document(current_war)
 
@@ -28,16 +25,12 @@ class Tracker:
     @classmethod
     async def track_war_battles(cls, clantag, db, bot):
         url = 'https://api.royaleapi.com/clan/{}/battles?type={}'.format(clantag, 'war')
-        headers = {'auth': cls.KEY}
 
-        async with aiohttp.ClientSession(trust_env=True) as cs:
-            async with cs.get(url, headers=headers) as r:
-                try:
-                    battles = await r.json()
-                except aiohttp.client_exceptions.ContentTypeError:
-                    log.exception('Problem converting war battles to JSON.')
-                    log.debug(r)
-                    return
+        try:
+            battles = await Tracker._make_call(url)
+        except aiohttp.client_exceptions.ContentTypeError:
+            log.exception('Problem converting war battles to JSON.')
+            return
 
         new_battles = db.add_war_battles(battles)
 
@@ -50,24 +43,30 @@ class Tracker:
     @classmethod
     async def track_clan(cls, clantag, db):
         url = 'https://api.royaleapi.com/clan/{}'.format(clantag)
-        headers = {'auth': cls.KEY}
 
-        async with aiohttp.ClientSession(trust_env=True) as cs:
-            async with cs.get(url, headers=headers) as r:
-                clan = await r.json()
+        clan = await Tracker._make_call(url)
 
         db.add_clan(clan)
 
     @classmethod
     async def track_war_logs(cls, clantag, db):
         url = 'https://api.royaleapi.com/clan/{}/warlog'.format(clantag)
-        headers = {'auth': cls.KEY}
 
-        async with aiohttp.ClientSession(trust_env=True) as cs:
-            async with cs.get(url, headers=headers) as r:
-                war_logs = await r.json()
+        war_logs = await Tracker._make_call(url)
 
         for war_log in war_logs:
             war_log['clantag'] = clantag
 
         db.add_war_logs(war_logs)
+
+    @classmethod
+    async def _make_call(cls, url):
+        headers = {'auth': cls.KEY}
+
+        async with aiohttp.ClientSession(trust_env=True) as cs:
+            async with cs.get(url, headers=headers) as r:
+                log.debug('X-Ratelimit-Remaining: {}, Retry-After: {}'.format(
+                    r.headers.get('X-Ratelimit-Remaining', 'Not set'),
+                    r.headers.get('Retry-After', 'Not set')))
+
+                return await r.json()
