@@ -63,8 +63,15 @@ class Scheduler:
             job_id = self.get_job_id(war, 'Tminus{}-{:.0f}'.format(t_minus, schedule_time.timestamp()))
             self.schedule_war_job(self.war_tracking, schedule_time, job_id, 'End of war job for {}'.format(job_id))
 
+        # Job to fetch war logs if this is a War Day
+        if war['state'] == 'warDay':
+            war_log_time = war_end_date.add(seconds=10)
+            job_id = self.get_job_id(war, 'war_logs')
+            self.schedule_war_job(self.war_logs, war_log_time, job_id, 'War logs job for {}'.format(job_id),
+                                  [war['clan']['tag']])
+
         # Job to have bot print war summary
-        summary_time = war_end_date.add(seconds=10)
+        summary_time = war_end_date.add(seconds=15)
         job_id = self.get_job_id(war, 'war_summary')
         self.schedule_war_job(self.war_summary, summary_time, job_id, 'War summary job for {}'.format(job_id),
                               [war['clan']['tag']])
@@ -75,11 +82,14 @@ class Scheduler:
         if not self.scheduler.get_job(job_id):
             self.scheduler.add_job(func, 'date', id=job_id, name=name or job_id, run_date=date, args=args)
 
-    async def war_summary(self, clantag):
+    async def war_logs(self, clan_tag):
+        await Tracker.track_war_logs(clan_tag, self.db)
+
+    async def war_summary(self, clan_tag):
         if not self.bot.is_ready() or not self.bot.get_cog('WarLog'):
             return
 
-        await self.bot.get_cog('WarLog').war_summary_auto(clantag)
+        await self.bot.get_cog('WarLog').war_summary_auto(clan_tag)
 
     @staticmethod
     def get_job_id(war, suffix):

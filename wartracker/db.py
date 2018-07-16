@@ -18,6 +18,8 @@ END_DATE_UTC = '_end_date_utc'
 END_DATE_LOCAL = '_end_date_local'
 BATTLE_DATE_UTC = '_battle_date_utc'
 BATTLE_DATE_LOCAL = '_battle_date_local'
+CREATED_DATE_UTC = '_created_date_utc'
+CREATED_DATE_LOCAL = '_created_date_local'
 
 
 class DB:
@@ -30,6 +32,7 @@ class DB:
         self.war_battles = None
         self.clan = None
         self.war_log_channels = None
+        self.war_logs = None
 
     def connect(self):
         self.client = MongoClient(self.uri)
@@ -38,10 +41,12 @@ class DB:
         self.war_battles = self.database.war_battles
         self.clan = self.database.clan
         self.war_log_channels = self.database.war_log_channels
+        self.war_logs = self.database.war_logs
 
         self.war.create_index(WARTRACKER_ID, name=WARTRACKER_ID, unique=True)
         self.war_battles.create_index([('utcTime', ASCENDING), ('team.tag', ASCENDING)], unique=True)
         self.war_log_channels.create_index([('clan', ASCENDING), ('server', ASCENDING)], unique=True)
+        self.war_logs.create_index([('createdDate', ASCENDING), ('clantag', ASCENDING)], unique=True)
 
     def add_current_war_document(self, document):
         # Get the time that War/Collection day ends
@@ -95,10 +100,10 @@ class DB:
                     # Attempt to add the document
                     try:
                         results = self.war_battles.insert_one(battle)
+                        # if results show it was added, return the added battles to a list
                         if results.acknowledged:
                             added_battles.append(battle)
 
-                        # if results show it was added, return the added battles to a list
                         print(results)
                     except DuplicateKeyError:
                         pass
@@ -106,6 +111,29 @@ class DB:
                 log.exception('Malformed Battle: {}'.format(battle))
 
         return added_battles
+
+    def add_war_logs(self, document):
+        added_war_logs = []
+        for war_log in document:
+            # Add timestamps for update
+            self.add_timestamps(war_log)
+
+            # Add readable created dates
+            created_date = pendulum.from_timestamp(war_log['createdDate'], tz='UTC')
+            local_created_date = created_date.in_timezone('America/Denver')
+            war_log[CREATED_DATE_UTC] = created_date.to_datetime_string()
+            war_log[CREATED_DATE_LOCAL] = local_created_date.to_datetime_string()
+
+            try:
+                results = self.war_logs.insert_one(war_log)
+                if results.acknowledged:
+                    added_war_logs.append(war_log)
+
+                print(results)
+            except DuplicateKeyError:
+                pass
+
+        return added_war_logs
 
     def add_clan(self, document):
         self.add_timestamps(document)

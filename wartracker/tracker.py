@@ -57,3 +57,17 @@ class Tracker:
                 clan = await r.json()
 
         db.add_clan(clan)
+
+    @classmethod
+    async def track_war_logs(cls, clantag, db):
+        url = 'https://api.royaleapi.com/clan/{}/warlog'.format(clantag)
+        headers = {'auth': cls.KEY}
+
+        async with aiohttp.ClientSession(trust_env=True) as cs:
+            async with cs.get(url, headers=headers) as r:
+                war_logs = await r.json()
+
+        for war_log in war_logs:
+            war_log['clantag'] = clantag
+
+        db.add_war_logs(war_logs)
