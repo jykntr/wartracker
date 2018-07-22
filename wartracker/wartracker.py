@@ -306,7 +306,9 @@ class WarLog:
         if auto:
             footer = '* Ended {} - last updated {} end time.'.format(end_string, update_time.diff_for_humans(end_time))
         else:
-            footer = '* Ends {} - last updated {}.'.format(end_string, update_time.diff_for_humans())
+            footer = '* Ends {} ({}) - last updated {}.'.format(end_string,
+                                                                end_time.diff_for_humans(),
+                                                                update_time.diff_for_humans())
 
         embed.set_footer(text=footer)
 
