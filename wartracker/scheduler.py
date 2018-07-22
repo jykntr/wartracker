@@ -29,7 +29,7 @@ class Scheduler:
                                misfire_grace_time=30,
                                timezone='UTC')
 
-        self.scheduler.add_job(Tracker.track_war_battles, 'interval', args=[self.clan_tag, self.db, self.bot],
+        self.scheduler.add_job(Tracker.track_war_battles, 'interval', args=[self.clan_tag, self.db],
                                next_run_time=pendulum.now('UTC').add(seconds=3),
                                minutes=30,
                                misfire_grace_time=30,

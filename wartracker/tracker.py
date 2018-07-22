@@ -23,7 +23,7 @@ class Tracker:
         return current_war
 
     @classmethod
-    async def track_war_battles(cls, clantag, db, bot):
+    async def track_war_battles(cls, clantag, db):
         url = 'https://api.royaleapi.com/clan/{}/battles?type={}'.format(clantag, 'war')
 
         try:
@@ -32,13 +32,7 @@ class Tracker:
             log.exception('Problem converting war battles to JSON.')
             return
 
-        new_battles = db.add_war_battles(battles)
-
-        for battle in new_battles:
-            #     warlog = bot.get_cog('WarLog')
-            #     # if bot.is_ready() and warlog:
-            #     await warlog.send_war_battle(battle)
-            pass
+        return db.add_war_battles(battles)
 
     @classmethod
     async def track_clan(cls, clantag, db):

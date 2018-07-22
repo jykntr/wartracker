@@ -145,7 +145,7 @@ class WarLog:
         if channel:
             await channel.send('{}'.format(battle['team'][0]['deckLink']))
 
-    def create_war_summary(self):
+    def create_war_summary(self, auto=True):
         war = War(self.bot.db.get_latest_war())
 
         embed = discord.Embed(color=0x8000ff)
@@ -155,13 +155,13 @@ class WarLog:
         WarLog.add_double_final_battle_wins(embed, war)
         WarLog.add_perfect_days(embed, war)
         WarLog.add_wall_of_shame(embed, war)
-        WarLog.add_footer(embed, war)
+        WarLog.add_footer(embed, war, auto)
 
         return embed
 
     async def war_summary_auto(self, clantag):
         channel_ids = self.bot.db.get_war_log_channels(clantag)
-        embed = self.create_war_summary()
+        embed = self.create_war_summary(True)
 
         for channel_id in channel_ids:
             channel = self.bot.get_channel(channel_id)
@@ -170,7 +170,9 @@ class WarLog:
 
     @commands.command(name='warsum')
     async def war_summary_command(self, ctx):
-        await ctx.send(embed=self.create_war_summary())
+        await ctx.trigger_typing()
+        await Tracker.track_war('GJ98VC', self.bot.db)
+        await ctx.send(embed=self.create_war_summary(auto=False))
 
     @staticmethod
     def set_author(embed, war):
@@ -296,12 +298,15 @@ class WarLog:
         embed.add_field(name='Standings', value=text, inline=False)
 
     @staticmethod
-    def add_footer(embed, war):
+    def add_footer(embed, war, auto):
         update_time = war.update_time
         end_time = war.end_time
 
         end_string = end_time.in_timezone('America/Denver').format('dddd, MMMM Do @ h:mm A zz')
-        footer = '* Ended {} - last updated {} end time.'.format(end_string, update_time.diff_for_humans(end_time))
+        if auto:
+            footer = '* Ended {} - last updated {} end time.'.format(end_string, update_time.diff_for_humans(end_time))
+        else:
+            footer = '* Ends {} - last updated {}.'.format(end_string, update_time.diff_for_humans())
 
         embed.set_footer(text=footer)
 
