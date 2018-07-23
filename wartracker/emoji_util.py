@@ -20,3 +20,7 @@ def get_bad_emote():
 
 def get_good_emote():
     return random.choice(good_emotes)
+
+
+def get_clan_badge(clan_json):
+    return emojis[clan_json['badge']['name']]

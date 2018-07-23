@@ -285,15 +285,20 @@ class WarLog:
 
         text = ''
         for rank, standing in enumerate(war.standings, 1):
-            text += '`#{}` {}`{}{:2d}` {}`{}{:2d}` [{}](http://royaleapi.com/clan/{})\n'.format(rank,
-                                                                                                emojis['warwin'],
-                                                                                                WarLog.SPACE,
-                                                                                                standing['wins'],
-                                                                                                emojis['crownblue'],
-                                                                                                WarLog.SPACE,
-                                                                                                standing['crowns'],
-                                                                                                standing['name'],
-                                                                                                standing['tag'])
+            line = '`#{}` {}`{}{:2d}` {}`{}{:2d}` {} [{}](http://royaleapi.com/clan/{})\n'
+            line = line.format(rank,
+                               emojis['warwin'],
+                               WarLog.SPACE,
+                               standing['wins'],
+                               emojis['crownblue'],
+                               WarLog.SPACE,
+                               standing['crowns'],
+                               emoji_util.get_clan_badge(
+                                   standing),
+                               standing['name'],
+                               standing['tag'])
+
+            text += line
 
         embed.add_field(name='Standings', value=text, inline=False)
 
