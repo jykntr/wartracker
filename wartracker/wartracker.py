@@ -150,8 +150,8 @@ class WarLog:
 
         embed = discord.Embed(color=0x8000ff)
         WarLog.set_author(embed, war)
-        WarLog.add_summary_line(embed, war)
-        WarLog.add_standings(embed, war)
+        # WarLog.add_summary_line(embed, war)
+        # WarLog.add_standings(embed, war)
         WarLog.add_double_final_battle_wins(embed, war)
         WarLog.add_perfect_days(embed, war)
         WarLog.add_wall_of_shame(embed, war)
