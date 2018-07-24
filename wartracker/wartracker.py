@@ -166,7 +166,11 @@ class WarLog:
         for channel_id in channel_ids:
             channel = self.bot.get_channel(channel_id)
             if channel:
-                await channel.send(embed=embed)
+                try:
+                    await channel.send(embed=embed)
+                except discord.DiscordException:
+                    log.exception(('Unexpected exception sending auto war summary. '
+                                   'Clan: {}, channel {}').format(clantag, channel_id))
 
     @commands.command(name='warsum')
     async def war_summary_command(self, ctx):
