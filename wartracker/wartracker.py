@@ -248,7 +248,7 @@ class WarLog:
     def add_wall_of_shame(embed, war):
         if war.is_war_day():
             expected_battles = 1
-            name = 'Wall of Shame - Missed final battles:'
+            name = 'Wall of Shame - Unplayed final battles:'
         else:
             expected_battles = 3
             name = 'Wall of Shame - Unplayed collection battles:'
