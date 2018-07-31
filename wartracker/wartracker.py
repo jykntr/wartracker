@@ -113,10 +113,6 @@ class War:
 class WarLog:
     """War log commands"""
 
-    # The space below is a ZERO WIDTH SPACE (U+200B)
-    # It looks like a space, but Discord's code block system will not trim it from the start of strings
-    SPACE = '​'
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -216,13 +212,13 @@ class WarLog:
         for participant in war.participants:
             if participant['wins'] == 3:
                 perfect_day_count = perfect_day_count + 1
-                line = '`{}{:2d}. {:<15} {:>4} {:>5}` {}'.format(WarLog.SPACE, perfect_day_count, participant['name'],
-                                                                 participant['wins'], participant['cardsEarned'],
-                                                                 emoji_util.get_good_emote())
+                line = '`\u2800{:2d}. {:\u2007<15} {:\u2007>5}` {}'.format(perfect_day_count, participant['name'],
+                                                                           participant['cardsEarned'],
+                                                                           emoji_util.get_good_emote())
                 lines.append(line)
 
         if len(lines) > 0:
-            lines.insert(0, '`{}{:>2}  {:<15} {:^4} {:^5}`'.format(WarLog.SPACE, '#', 'Name', 'Wins', 'Cards'))
+            lines.insert(0, u'`\u2800{:>2}\u2800 {:\u2007<15} {:\u2007^5}\u2800`'.format('#', 'Name', 'Cards'))
             text = '\n'.join(lines)
         else:
             text = 'No perfect collection days! {}'.format(emoji_util.get_bad_emote())
@@ -239,12 +235,12 @@ class WarLog:
         for participant in war.participants:
             if participant['wins'] > 1:
                 double_wins = double_wins + 1
-                line = '`{}{:2d}. {:<15} {:>4}` {}'.format(WarLog.SPACE, double_wins, participant['name'],
-                                                           participant['wins'], emoji_util.get_good_emote())
+                line = u'`\u2800{:2d}. {:\u2007<15}\u2800`{}'.format(double_wins, participant['name'],
+                                                                     emoji_util.get_good_emote())
                 lines.append(line)
 
         if len(lines) > 0:
-            lines.insert(0, '`{}{:>2}  {:<15} {:^4}`'.format(WarLog.SPACE, '#', 'Name', 'Wins'))
+            lines.insert(0, u'`\u2800{:>2}\u2800 {:\u2007<15}`'.format('#', 'Name'))
             text = '\n'.join(lines)
             embed.add_field(name='MVPs - Double War Day Wins', value=text, inline=False)
 
@@ -263,18 +259,19 @@ class WarLog:
             if participant['battlesPlayed'] < expected_battles:
                 shame_count = shame_count + 1
                 if war.is_war_day():
-                    line = '`{}{:2d}. {:<15}`'.format(WarLog.SPACE, shame_count, participant['name'],
-                                                      emoji_util.get_bad_emote())
+                    line = u'`\u2800{:2d}. {:\u2007<15}\u2800`{}'.format(shame_count, participant['name'],
+                                                                         emoji_util.get_bad_emote())
                 else:
-                    count = '{} of {}'.format(participant['battlesPlayed'], expected_battles)
-                    line = '`{}{:2d}. {:<15} {:^14}`'.format(WarLog.SPACE, shame_count, participant['name'], count)
-                lines.append(line + ' {}'.format(emoji_util.get_bad_emote()))
+                    count = expected_battles - participant['battlesPlayed']
+                    line = u'`\u2800{:2d}. {:\u2007<15}\u2007{:2d}`{}'.format(shame_count, participant['name'], count,
+                                                                              emoji_util.get_bad_emote())
+                lines.append(line)
 
         if len(lines) > 0:
             if war.is_war_day():
-                lines.insert(0, '`{}{:>2}  {:<15}`'.format(WarLog.SPACE, '#', 'Name'))
+                lines.insert(0, u'`\u2800{:>2}\u2800 {:<15}`'.format('#', 'Name'))
             else:
-                lines.insert(0, '`{}{:>2}  {:<15} {:^14}`'.format(WarLog.SPACE, '#', 'Name', 'Battles Played'))
+                lines.insert(0, u'`\u2800{:>2}\u2800 {:\u2007<15} {}`'.format('#', 'Name', 'Missed'))
 
             text = '\n'.join(lines)
         else:
@@ -289,13 +286,13 @@ class WarLog:
 
         text = ''
         for rank, standing in enumerate(war.standings, 1):
-            line = '`#{}` {}`{}{:2d}` {}`{}{:2d}` {} [{}](http://royaleapi.com/clan/{})\n'
+            line = u'`#{}` {}`{}{:2d}` {}`{}{:2d}` {} [{}](http://royaleapi.com/clan/{})\n'
             line = line.format(rank,
                                emojis['warwin'],
-                               WarLog.SPACE,
+                               u'\u2800',
                                standing['wins'],
                                emojis['crownblue'],
-                               WarLog.SPACE,
+                               u'\u2800',
                                standing['crowns'],
                                emoji_util.get_clan_badge(
                                    standing),
