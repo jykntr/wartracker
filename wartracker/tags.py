@@ -22,7 +22,7 @@ def normalize_tag(tag):
 
 
 def is_tag_valid(tag):
-    """Tags can optionally start with a hashtag, must be at least 3 characters long and only contain the following
+    """Tags can optionally start with a hash tag, must be at least 3 characters long and only contain the following
     set of characters: '0289PpYyLlQqGgRrJjCcUuVv'
     """
     match = re.match("^[" + get_legal_tag_chars() + "]{3,}$", tag.lstrip("#"))

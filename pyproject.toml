@@ -1,3 +1,25 @@
+[tool.poetry]
+name = "wartracker"
+version = "0.1.0"
+description = "Track your Clash Royale war statistics"
+authors = ["jykntr <jykntr@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+pendulum = "^2.0"
+pymongo = "^3.7"
+click = "^6.7"
+"discord.py" = { git = "https://github.com/Rapptz/discord.py.git", branch = "rewrite" }
+apscheduler = "^3.5"
+
+[tool.poetry.dev-dependencies]
+flake8 = "*"
+pytest = "*"
+black = "*"
+
+[tool.poetry.scripts]
+wartracker = 'wartracker.cli:main'
+
 [tool.black]
 line-length = 88
 py36 = true

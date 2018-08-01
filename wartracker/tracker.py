@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 class Tracker:
     KEY = None
+    trust_env = False
 
     @classmethod
     def set_key(cls, key):
@@ -57,7 +58,7 @@ class Tracker:
     async def _make_call(cls, url):
         headers = {"auth": cls.KEY}
 
-        async with aiohttp.ClientSession(trust_env=True) as cs:
+        async with aiohttp.ClientSession(trust_env=cls.trust_env) as cs:
             async with cs.get(url, headers=headers) as r:
                 log.debug(
                     "X-Ratelimit-Remaining: {}, Retry-After: {}".format(

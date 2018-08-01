@@ -1,9 +1,0 @@
-pymongo==3.6.1
-click==6.7
-apscheduler==3.5.1
-pendulum==2.0.2
-git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py
-aiohttp
-
-flake8
-black

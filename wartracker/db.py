@@ -173,9 +173,9 @@ class DB:
 
     def set_war_log_channel(self, clantag, server_id, channel_id):
         document = {"clan": clantag, "server": server_id, "channel": channel_id}
-        filter = {"clan": clantag, "server": server_id}
+        replace_filter = {"clan": clantag, "server": server_id}
 
-        self.war_log_channels.replace_one(filter, document, upsert=True)
+        self.war_log_channels.replace_one(replace_filter, document, upsert=True)
 
     def get_war_log_channels(self, clantag):
         channels = []

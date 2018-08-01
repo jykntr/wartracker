@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class Scheduler:
-    def __init__(self, clan_tag: str, db: DB, bot: commands.Bot) -> None:
+    def __init__(self, clan_tag: str, db: DB, bot: commands.bot = None) -> None:
         self.clan_tag: str = clan_tag
         self.scheduler = AsyncIOScheduler()
         self.db = db
@@ -20,7 +20,7 @@ class Scheduler:
         # Start the scheduler
         self.scheduler.start()
 
-    def start_scheduler(self) -> None:
+    def add_jobs(self) -> None:
         # track the war once per hour starting now-ish
         self.scheduler.add_job(
             self.war_tracking,
@@ -59,7 +59,6 @@ class Scheduler:
             args=[self.clan_tag, self.db],
             next_run_time=pendulum.now("UTC").add(seconds=60),
             hours=4,
-            misfire_grace_time=30,
             jitter=350,
             timezone="UTC",
             id="track_war_logs",
@@ -127,6 +126,9 @@ class Scheduler:
         await Tracker.track_war_logs(clan_tag, self.db)
 
     async def war_summary(self, clan_tag):
+        if not self.bot:
+            return
+
         if not self.bot.is_ready() or not self.bot.get_cog("WarLog"):
             return
 

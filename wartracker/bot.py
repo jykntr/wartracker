@@ -1,118 +1,35 @@
-#!/usr/bin/env python3
-
-import asyncio
 import logging
-import os
 
-import click
 import discord
-import pendulum
 from discord.ext import commands
 
 from . import emoji_util
-from . import tags
 from .db import DB
 from .emoji import emojis
+from .models import War
 from .scheduler import Scheduler
 from .tracker import Tracker
 
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", logging.DEBUG),
-    format="%(asctime)s:%(levelname)s:%(module)s:%(module)s:%(funcName)s:%(lineno)d - %(message)s",
-)
-
 log = logging.getLogger(__name__)
-logging.getLogger("discord").setLevel(logging.INFO)
-logging.getLogger("requests").setLevel(logging.INFO)
-logging.getLogger("urllib3").setLevel(logging.INFO)
-logging.getLogger("websockets").setLevel(logging.INFO)
-logging.getLogger("asyncio").setLevel(logging.INFO)
 
 
-def validate_player_tag_input(ctx, param, value):
-    tag = tags.normalize_tag(value)
-    valid_tag = tags.is_tag_valid(tag)
+class WarTrackerBot(commands.Bot):
+    def __init__(self, token: str, db: DB, scheduler: Scheduler, **options):
+        super().__init__(**options)
 
-    if not valid_tag:
-        raise click.BadParameter(
-            "Tags may only contain the following characters: '{}'".format(
-                tags.get_legal_tag_chars()
-            )
-        )
+        self.token = token
+        self.db = db
+        self.scheduler = scheduler
 
-    return tag
+        self.add_cog(WarLog(self))
 
+    def run(self):
+        super().run(self.token)
 
-class War:
-    def __init__(self, war_json):
-        self.json = war_json
-
-    def is_war_day(self):
-        return "warEndTime" in self.json
-
-    def is_collection_day(self):
-        return "collectionEndTime" in self.json
-
-    @property
-    def clan_name(self):
-        return self.json["clan"]["name"]
-
-    @property
-    def clan_tag(self):
-        return self.json["clan"]["tag"]
-
-    @property
-    def clan_badge(self):
-        return self.json["clan"]["badge"]["image"]
-
-    @property
-    def participant_count(self):
-        return self.json["clan"]["participants"]
-
-    @property
-    def wins(self):
-        return self.json["clan"]["wins"]
-
-    @property
-    def possible_battles(self):
-        if self.is_war_day():
-            return max(self.participant_count, self.battles_played)
-        else:
-            return self.participant_count * 3
-
-    @property
-    def battles_played(self):
-        return self.json["clan"]["battlesPlayed"]
-
-    @property
-    def update_time(self):
-        return pendulum.from_timestamp(self.json["_update_utc_timestamp"])
-
-    @property
-    def end_time(self):
-        if self.is_war_day():
-            return pendulum.from_timestamp(self.json["warEndTime"])
-        else:
-            return pendulum.from_timestamp(self.json["collectionEndTime"])
-
-    @property
-    def total_cards_earned(self):
-        cards_earned = 0
-        for participant in self.participants:
-            cards_earned = cards_earned + participant["cardsEarned"]
-
-        return cards_earned
-
-    @property
-    def participants(self):
-        return self.json["participants"]
-
-    @property
-    def standings(self):
-        if self.is_war_day():
-            return self.json["standings"]
-        else:
-            return None
+    async def on_ready(self):
+        log.info("We have logged in as {}".format(self.user))
+        self.scheduler.bot = self
+        self.scheduler.add_jobs()
 
 
 class WarLog:
@@ -365,68 +282,3 @@ class WarLog:
             )
 
         embed.set_footer(text=footer)
-
-
-@click.command()
-@click.option(
-    "--bot-token",
-    envvar="BOTTOKEN",
-    default=None,
-    help="Discord bot token. If not specified bot will not start.",
-)
-@click.option(
-    "--command-prefix",
-    envvar="BOT_PREFIX",
-    default="$",
-    help="The bots command prefix.",
-)
-@click.option(
-    "--key",
-    envvar="ROYALEAPIKEY",
-    prompt="Enter the key for RoyaleAPI",
-    help="RoyaleAPI authorization key.",
-)
-@click.option(
-    "--database",
-    envvar="MONGODBURI",
-    default="mongodb://localhost:27017/",
-    help='MongoDB Database URI.  E.g. "mongodb://localhost:27017/"',
-)
-@click.option(
-    "--dbname",
-    envvar="DBNAME",
-    default="clashtracker",
-    help="Name of database to connect with.",
-)
-@click.argument("clantag", envvar="CLANTAG", callback=validate_player_tag_input)
-def cli(clantag, key, database, dbname, bot_token, command_prefix):
-    Tracker.set_key(key)
-
-    db = DB(database, dbname)
-    db.connect()
-
-    bot = commands.Bot(command_prefix=command_prefix)
-    bot.add_cog(WarLog(bot))
-    bot.db = db
-
-    if bot_token:
-
-        @bot.event
-        async def on_ready():
-            log.info("We have logged in as {0.user}".format(bot))
-            scheduler = Scheduler(clantag, db, bot)
-            scheduler.start_scheduler()
-
-        bot.run(bot_token)
-    else:
-        try:
-            scheduler = Scheduler(clantag, db, bot)
-            scheduler.start_scheduler()
-
-            asyncio.get_event_loop().run_forever()
-        except (KeyboardInterrupt, SystemExit):
-            pass
-
-
-if __name__ == "__main__":
-    cli()

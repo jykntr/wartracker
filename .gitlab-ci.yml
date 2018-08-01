@@ -9,8 +9,7 @@ inspect:
   stage: test
   image: python:3.6
   script:
-    - pip install -r requirements.txt
-    - flake8
+    - pip install black
     - black --check .
 
 build-master-arm:
