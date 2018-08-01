@@ -10,7 +10,7 @@ inspect:
   image: python:3.6
   script:
     - pip install black
-    - black --check .
+    - black --py36 --check .
 
 build-master-arm:
   stage: build
