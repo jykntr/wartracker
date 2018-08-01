@@ -13,6 +13,7 @@ good_emotes = [
     emojis["goblin_muscle"],
     emojis["goblin_smile"],
     emojis["goblin_cool"],
+    emojis["giant_thumbs"],
 ]
 
 bad_emotes = [
@@ -23,6 +24,8 @@ bad_emotes = [
     emojis["goblin_tongue"],
     emojis["goblin_ohmy"],
     emojis["goblin_ohno"],
+    emojis["giant_crush"],
+    emojis["giant_fist"],
 ]
 
 

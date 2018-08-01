@@ -125,6 +125,10 @@ emojis = {
     "princess_angry": "<:princess_angry:466115141767921664>",
     "princess_kiss": "<:princess_kiss:466115141772247041>",
     "kingconfused": "<:kingconfused:466115142577291286>",
+    "giant_eat": "<:giant_eat:473871947462344705>",
+    "giant_crush": "<:giant_crush:473871947537842217>",
+    "giant_thumbs": "<:giant_thumbs:473871947541774338>",
+    "giant_fist": "<:giant_fist:473871947563008008>",
     # Emojis from server 'Emoji icons 1'
     "participant": "<:participant:466098401227046933>",
     "battle": "<:battle:466098401323253761>",
