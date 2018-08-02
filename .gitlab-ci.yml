@@ -9,8 +9,9 @@ inspect:
   stage: test
   image: python:3.6
   script:
-    - pip install black
+    - pip install black flake8
     - black --py36 --check .
+    - flake8
 
 build-master-arm:
   stage: build
