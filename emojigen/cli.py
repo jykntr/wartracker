@@ -14,23 +14,23 @@ class EmojiClient(discord.Client):
         with open(self.output_file, "w", newline="\n") as f:
             start = "emojis = {\n"
             f.write(start)
-            print(start)
+            print(start, end="")
 
             for guild in self.guilds:
                 name_comment = "    # Emojis from server '{}'\n".format(guild.name)
                 f.write(name_comment)
-                print(name_comment)
+                print(name_comment, end="")
 
                 for emoji in guild.emojis:
                     key_value = '    "{1}": "<:{1}:{0}>",\n'.format(
                         emoji.id, emoji.name
                     )
                     f.write(key_value)
-                    print(key_value)
+                    print(key_value, end="")
 
             end = "}\n"
             f.write(end)
-            print(end)
+            print(end, end="")
 
             print("Successfully wrote {}.".format(self.output_file))
 
@@ -48,10 +48,10 @@ class EmojiClient(discord.Client):
     "output-file",
     type=click.Path(exists=False, file_okay=True, dir_okay=False, writable=True),
 )
-def cli(bot_token, output_file):
+def main(bot_token, output_file):
     client = EmojiClient(output_file)
     client.run(bot_token)
 
 
 if __name__ == "__main__":
-    cli()
+    main()
