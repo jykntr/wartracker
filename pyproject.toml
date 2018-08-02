@@ -19,6 +19,7 @@ black = "*"
 
 [tool.poetry.scripts]
 wartracker = 'wartracker.cli:main'
+emojigen = 'emojigen.cli:main'
 
 [tool.black]
 line-length = 88
