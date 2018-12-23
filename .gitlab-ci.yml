@@ -9,7 +9,7 @@ inspect:
   stage: test
   image: python:3.6
   script:
-    - pip install black flake8
+    - pip install black==18.6b4 flake8
     - black --py36 --check .
     - flake8
 
