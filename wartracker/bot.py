@@ -6,7 +6,7 @@ from discord.ext import commands
 from . import emoji_util
 from .db import DB
 from .emoji import emojis
-from .models import War
+from .models import War, Clan, Battles
 from .scheduler import Scheduler
 from .tracker import Tracker
 
@@ -81,6 +81,71 @@ class WarLog:
     async def war_summary_auto(self, clantag):
         channel_ids = self.bot.db.get_war_log_channels(clantag)
         embed = self.create_war_summary(True)
+
+        for channel_id in channel_ids:
+            channel = self.bot.get_channel(channel_id)
+            if channel:
+                try:
+                    await channel.send(embed=embed)
+                except discord.DiscordException:
+                    log.exception(
+                        (
+                            "Unexpected exception sending auto war summary. "
+                            "Clan: {}, channel {}"
+                        ).format(clantag, channel_id)
+                    )
+
+    @staticmethod
+    async def create_inactives_summary(clantag):
+        inactive_players = []
+
+        clan = Clan(await Tracker.get_clan(clantag))
+        for tag in clan.member_tags:
+            battles = Battles(await Tracker.get_player_battles(tag))
+
+            if battles.is_inactive():
+                member = clan.get_member(tag)
+                member["last_battle_description"] = battles.get_last_battle_string()
+                inactive_players.append(clan.get_member(tag))
+
+        embed = discord.Embed(color=0x8000ff)
+        embed.set_author(
+            name=clan.clan_name,
+            url="http://royaleapi.com/clan/{}/".format(clan.clan_tag),
+            icon_url=clan.clan_badge,
+        )
+
+        lines = []
+        count = 0
+        for player in inactive_players:
+            count = count + 1
+            lines.append(
+                "`\u2800{:2d}. {:\u2007<15} {} ({})`".format(
+                    count,
+                    player["name"],
+                    player["last_battle_description"],
+                    player["trophies"],
+                )
+            )
+
+        if len(lines) > 0:
+            lines.insert(
+                0,
+                "`\u2800{:>2}\u2800 {:\u2007<15} {}`".format(
+                    "#", "Name", "Last battle (trophies)"
+                ),
+            )
+            text = "\n".join(lines)
+        else:
+            text = "No inactive players! :)"
+
+        embed.add_field(name="Inactive Players", value=text, inline=False)
+
+        return embed
+
+    async def inactives_auto(self, clantag):
+        channel_ids = self.bot.db.get_war_log_channels(clantag)
+        embed = await self.create_inactives_summary(clantag)
 
         for channel_id in channel_ids:
             channel = self.bot.get_channel(channel_id)

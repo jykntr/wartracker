@@ -1,6 +1,63 @@
 import pendulum
 
 
+class Clan:
+    def __init__(self, clan_json):
+        self.json = clan_json
+
+    @property
+    def clan_name(self):
+        return self.json["name"]
+
+    @property
+    def clan_tag(self):
+        return self.json["tag"]
+
+    @property
+    def clan_badge(self):
+        return self.json["badge"]["image"]
+
+    @property
+    def member_tags(self):
+        member_tags = []
+        for member in self.json["members"]:
+            member_tags.append(member["tag"])
+
+        return member_tags
+
+    def get_member(self, tag):
+        for member in self.json["members"]:
+            if member["tag"] == tag:
+                return member
+
+        return None
+
+
+class Battles:
+    def __init__(self, battles_json):
+        self.json = battles_json
+
+    @property
+    def number_of_battles(self):
+        return len(self.json)
+
+    def is_inactive(self, weeks_to_be_inactive=2):
+        if self.number_of_battles == 0:
+            return True
+        else:
+            battle_time = pendulum.from_timestamp(self.json[0]["utcTime"])
+            return battle_time < pendulum.now("UTC").subtract(
+                weeks=weeks_to_be_inactive
+            )
+
+    def get_last_battle_string(self):
+        if self.number_of_battles == 0:
+            return "No battle history"
+        else:
+            battle_time = pendulum.from_timestamp(self.json[0]["utcTime"])
+            return battle_time.diff_for_humans()
+
+
 class War:
     def __init__(self, war_json):
         self.json = war_json

@@ -65,6 +65,17 @@ class Scheduler:
             name="Track war logs",
         )
 
+        self.scheduler.add_job(
+            self.inactive_members,
+            "interval",
+            args=[self.clan_tag],
+            next_run_time=pendulum.tomorrow("UTC").add(minutes=5),
+            weeks=1,
+            timezone="UTC",
+            id="inactives",
+            name="Inactive players",
+        )
+
     async def war_tracking(self):
         current_war = await Tracker.track_war(self.clan_tag, self.db)
 
@@ -133,6 +144,15 @@ class Scheduler:
             return
 
         await self.bot.get_cog("WarLog").war_summary_auto(clan_tag)
+
+    async def inactive_members(self, clan_tag):
+        if not self.bot:
+            return
+
+        if not self.bot.is_ready() or not self.bot.get_cog("WarLog"):
+            return
+
+        await self.bot.get_cog("WarLog").inactives_auto(clan_tag)
 
     @staticmethod
     def get_job_id(war, suffix):

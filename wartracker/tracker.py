@@ -55,15 +55,28 @@ class Tracker:
         db.add_war_logs(war_logs)
 
     @classmethod
+    async def get_clan(cls, clantag):
+        url = "https://api.royaleapi.com/clan/{}".format(clantag)
+
+        return await Tracker._make_call(url)
+
+    @classmethod
+    async def get_player_battles(cls, playertag):
+        url = "https://api.royaleapi.com/player/{}/battles".format(playertag)
+
+        return await Tracker._make_call(url)
+
+    @classmethod
     async def _make_call(cls, url):
         headers = {"auth": cls.KEY}
 
         async with aiohttp.ClientSession(trust_env=cls.trust_env) as cs:
             async with cs.get(url, headers=headers) as r:
                 log.debug(
-                    "X-Ratelimit-Remaining: {}, Retry-After: {}".format(
+                    "X-Ratelimit-Remaining: {}, Retry-After: {} - URL: {}".format(
                         r.headers.get("X-Ratelimit-Remaining", "Not set"),
                         r.headers.get("Retry-After", "Not set"),
+                        url,
                     )
                 )
 
