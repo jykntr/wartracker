@@ -52,7 +52,7 @@ class Battles:
 
     def get_last_battle_string(self):
         if self.number_of_battles == 0:
-            return "No battle history"
+            return "No battles"
         else:
             battle_time = pendulum.from_timestamp(self.json[0]["utcTime"])
             return battle_time.diff_for_humans()
