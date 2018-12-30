@@ -120,12 +120,13 @@ class WarLog:
         for player in inactive_players:
             count = count + 1
             lines.append(
-                "`\u2800{:2d}. {:\u2007<15} {} ({}, {})`".format(
+                "`\u2800{:2d}. {:\u2007<15} {} ({}, {})`{}".format(
                     count,
                     player["name"],
                     player["last_battle_description"],
                     player["trophies"],
                     player["role"],
+                    emoji_util.get_bad_emote(),
                 )
             )
 
