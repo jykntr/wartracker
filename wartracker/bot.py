@@ -120,11 +120,12 @@ class WarLog:
         for player in inactive_players:
             count = count + 1
             lines.append(
-                "`\u2800{:2d}. {:\u2007<15} {} ({})`".format(
+                "`\u2800{:2d}. {:\u2007<15} {} ({}, {})`".format(
                     count,
                     player["name"],
                     player["last_battle_description"],
                     player["trophies"],
+                    player["role"],
                 )
             )
 
@@ -132,7 +133,7 @@ class WarLog:
             lines.insert(
                 0,
                 "`\u2800{:>2}\u2800 {:\u2007<15} {}`".format(
-                    "#", "Name", "Last battle (trophies)"
+                    "#", "Name", "Last battle (trophies, role)"
                 ),
             )
             text = "\n".join(lines)
