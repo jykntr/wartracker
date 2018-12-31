@@ -56,13 +56,6 @@ class WarLog:
             log.debug("Error setting")
             log.debug(error)
 
-    async def send_war_battle(self, battle):
-        log.debug("{}?type=war".format(battle["team"][0]["deckLink"]))
-
-        channel = self.bot.get_channel(330528722211962880)
-        if channel:
-            await channel.send("{}".format(battle["team"][0]["deckLink"]))
-
     def create_war_summary(self, auto=True):
         war = War(self.bot.db.get_latest_war())
 
