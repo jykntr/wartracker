@@ -95,6 +95,12 @@ class WarLog:
                         ).format(clantag, channel_id)
                     )
 
+    @commands.command(name="warsum")
+    async def war_summary_command(self, ctx):
+        await ctx.trigger_typing()
+        await Tracker.track_war("GJ98VC", self.bot.db)
+        await ctx.send(embed=self.create_war_summary(auto=False))
+
     @staticmethod
     async def create_inactives_summary(clantag):
         inactive_players = []
@@ -162,11 +168,11 @@ class WarLog:
                         ).format(clantag, channel_id)
                     )
 
-    @commands.command(name="warsum")
-    async def war_summary_command(self, ctx):
+    @commands.command(name="inactives")
+    async def inactives_command(self, ctx):
         await ctx.trigger_typing()
-        await Tracker.track_war("GJ98VC", self.bot.db)
-        await ctx.send(embed=self.create_war_summary(auto=False))
+        embed = await self.create_inactives_summary("GJ98VC")
+        await ctx.send(embed=embed)
 
     @staticmethod
     def set_author(embed, war):
