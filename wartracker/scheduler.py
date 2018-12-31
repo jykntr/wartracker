@@ -25,7 +25,7 @@ class Scheduler:
         self.scheduler.add_job(
             self.war_tracking,
             "interval",
-            next_run_time=pendulum.now(tz="UTC").add(seconds=5),
+            next_run_time=pendulum.now("UTC").add(seconds=5),
             minutes=60,
             timezone="UTC",
         )
@@ -69,7 +69,7 @@ class Scheduler:
             self.inactive_members,
             "interval",
             args=[self.clan_tag],
-            next_run_time=pendulum.tomorrow("UTC").add(minutes=5),
+            next_run_time=pendulum.now("UTC").end_of("week").add(minutes=5),
             weeks=1,
             timezone="UTC",
             id="inactives",
