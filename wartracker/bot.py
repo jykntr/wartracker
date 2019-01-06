@@ -94,6 +94,66 @@ class WarLog:
         await Tracker.track_war("GJ98VC", self.bot.db)
         await ctx.send(embed=self.create_war_summary(auto=False))
 
+    async def create_top_donators_summary(self, clantag):
+        clan = Clan(await Tracker.get_clan(clantag))
+        sorted_members = clan.get_top_donators()
+
+        embed = discord.Embed(color=0x8000ff)
+
+        embed.set_author(
+            name=clan.clan_name,
+            url="http://royaleapi.com/clan/{}/".format(clan.clan_tag),
+            icon_url=clan.clan_badge,
+        )
+
+        lines = []
+        for count, player in enumerate(sorted_members, 1):
+            lines.append(
+                "`\u2800{:2d}. {:\u2007<15} {:\u2007>5}`{}".format(
+                    count,
+                    player["name"],
+                    player["donations"],
+                    emoji_util.get_good_emote(),
+                )
+            )
+
+        if len(lines) > 0:
+            lines.insert(
+                0,
+                "`\u2800{:>2}\u2800 {:\u2007<15} {:\u2007>5}`".format(
+                    "#", "Name", "Donations"
+                ),
+            )
+            text = "\n".join(lines)
+        else:
+            text = "No top donators! {}".format(emoji_util.get_bad_emote())
+
+        embed.add_field(name="Top Donators", value=text, inline=False)
+        return embed
+
+    async def top_donators_auto(self, clantag):
+        channel_ids = self.bot.db.get_war_log_channels(clantag)
+        embed = await self.create_top_donators_summary(clantag)
+
+        for channel_id in channel_ids:
+            channel = self.bot.get_channel(channel_id)
+            if channel:
+                try:
+                    await channel.send(embed=embed)
+                except discord.DiscordException:
+                    log.exception(
+                        (
+                            "Unexpected exception sending auto war summary. "
+                            "Clan: {}, channel {}"
+                        ).format(clantag, channel_id)
+                    )
+
+    @commands.command(name="topdonators")
+    async def top_donators_command(self, ctx):
+        await ctx.trigger_typing()
+        embed = await self.create_top_donators_summary("GJ98VC")
+        await ctx.send(embed=embed)
+
     @staticmethod
     async def create_inactives_summary(clantag):
         inactive_players = []

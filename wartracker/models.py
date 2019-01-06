@@ -32,6 +32,13 @@ class Clan:
 
         return None
 
+    def get_top_donators(self, number_of_donators=3):
+        sorted_members = sorted(
+            self.json["members"], key=lambda x: x["donations"], reverse=True
+        )
+
+        return sorted_members[:number_of_donators]
+
 
 class Battles:
     def __init__(self, battles_json):

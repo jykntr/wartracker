@@ -76,6 +76,17 @@ class Scheduler:
             name="Inactive players",
         )
 
+        self.scheduler.add_job(
+            self.top_donators,
+            "interval",
+            args=[self.clan_tag],
+            next_run_time=pendulum.now("UTC")._end_of_week().subtract(minutes=1),
+            weeks=1,
+            timezone="UTC",
+            id="top_donators",
+            name="Top donators",
+        )
+
     async def war_tracking(self):
         current_war = await Tracker.track_war(self.clan_tag, self.db)
 
@@ -153,6 +164,15 @@ class Scheduler:
             return
 
         await self.bot.get_cog("WarLog").inactives_auto(clan_tag)
+
+    async def top_donators(self, clan_tag):
+        if not self.bot:
+            return
+
+        if not self.bot.is_ready() or not self.bot.get_cog("WarLog"):
+            return
+
+        await self.bot.get_cog("WarLog").top_donators_auto(clan_tag)
 
     @staticmethod
     def get_job_id(war, suffix):
