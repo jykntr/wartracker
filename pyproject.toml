@@ -11,6 +11,9 @@ pymongo = "^3.7"
 click = "^6.7"
 "discord.py" = { git = "https://github.com/Rapptz/discord.py.git", branch = "rewrite" }
 apscheduler = "^3.5"
+clashroyale = "^4.0"
+yaspin = "^0.14.0"
+requests = "^2.21"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
@@ -20,6 +23,7 @@ black = "18.6b4"
 [tool.poetry.scripts]
 wartracker = 'wartracker.cli:main'
 emojigen = 'emojigen.cli:main'
+webrefresher = 'royaleapiweb.cli:main'
 
 [tool.black]
 line-length = 88

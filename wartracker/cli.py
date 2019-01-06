@@ -4,6 +4,7 @@ import os
 
 import click
 
+from royaleapiweb.refresher import Refresher, ROYALE_API
 from .bot import WarTrackerBot
 from .db import DB
 from .scheduler import Scheduler
@@ -79,7 +80,8 @@ def main(clantag, key, database, dbname, bot_token, command_prefix, proxy_vars):
     db = DB(database, dbname)
     db.connect()
 
-    scheduler = Scheduler(clantag, db)
+    web_refresher = Refresher(clantag, key, ROYALE_API, 10)
+    scheduler = Scheduler(clantag, db, web_refresher)
 
     if bot_token:
         bot = WarTrackerBot(bot_token, db, scheduler, command_prefix=command_prefix)

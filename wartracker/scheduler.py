@@ -4,6 +4,7 @@ import pendulum
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from discord.ext import commands
 
+from royaleapiweb.refresher import Refresher
 from .db import DB
 from .tracker import Tracker
 
@@ -11,10 +12,13 @@ log = logging.getLogger(__name__)
 
 
 class Scheduler:
-    def __init__(self, clan_tag: str, db: DB, bot: commands.bot = None) -> None:
+    def __init__(
+        self, clan_tag: str, db: DB, web_refresher: Refresher, bot: commands.bot = None
+    ) -> None:
         self.clan_tag: str = clan_tag
         self.scheduler = AsyncIOScheduler()
         self.db = db
+        self.web_refresher = web_refresher
         self.bot = bot
 
         # Start the scheduler
@@ -74,6 +78,17 @@ class Scheduler:
             timezone="UTC",
             id="inactives",
             name="Inactive players",
+        )
+
+        self.scheduler.add_job(
+            self.web_refresher.run_no_spin,
+            "interval",
+            next_run_time=pendulum.now("UTC").add(minutes=3),
+            hours=6,
+            jitter=350,
+            timezone="UTC",
+            id="web_refresh",
+            name="Refresh clan member battles on http://royaleapi.com",
         )
 
     async def war_tracking(self):
