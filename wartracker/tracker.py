@@ -15,7 +15,7 @@ class Tracker:
 
     @classmethod
     async def track_war(cls, clantag, db):
-        url = "https://api.royaleapi.com/clan/{}/war".format(clantag)
+        url = "https://api-v2.royaleapi.com/clan/{}/war".format(clantag)
 
         current_war = await Tracker._make_call(url)
 
@@ -25,7 +25,9 @@ class Tracker:
 
     @classmethod
     async def track_war_battles(cls, clantag, db):
-        url = "https://api.royaleapi.com/clan/{}/battles?type={}".format(clantag, "war")
+        url = "https://api-v2.royaleapi.com/clan/{}/battles?type={}".format(
+            clantag, "war"
+        )
 
         try:
             battles = await Tracker._make_call(url)
@@ -37,7 +39,7 @@ class Tracker:
 
     @classmethod
     async def track_clan(cls, clantag, db):
-        url = "https://api.royaleapi.com/clan/{}".format(clantag)
+        url = "https://api-v2.royaleapi.com/clan/{}".format(clantag)
 
         clan = await Tracker._make_call(url)
 
@@ -45,7 +47,7 @@ class Tracker:
 
     @classmethod
     async def track_war_logs(cls, clantag, db):
-        url = "https://api.royaleapi.com/clan/{}/warlog".format(clantag)
+        url = "https://api-v2.royaleapi.com/clan/{}/warlog".format(clantag)
 
         war_logs = await Tracker._make_call(url)
 
@@ -56,13 +58,13 @@ class Tracker:
 
     @classmethod
     async def get_clan(cls, clantag):
-        url = "https://api.royaleapi.com/clan/{}".format(clantag)
+        url = "https://api-v2.royaleapi.com/clan/{}".format(clantag)
 
         return await Tracker._make_call(url)
 
     @classmethod
     async def get_player_battles(cls, playertag):
-        url = "https://api.royaleapi.com/player/{}/battles".format(playertag)
+        url = "https://api-v2.royaleapi.com/player/{}/battles".format(playertag)
 
         return await Tracker._make_call(url)
 
