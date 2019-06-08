@@ -32,7 +32,7 @@ class WarTrackerBot(commands.Bot):
         self.scheduler.add_jobs()
 
 
-class WarLog:
+class WarLog(commands.Cog):
     """War log commands"""
 
     def __init__(self, bot):

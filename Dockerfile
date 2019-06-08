@@ -7,7 +7,6 @@ WORKDIR /app
 
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
-RUN pip install -U git+https://github.com/Rapptz/discord.py@rewrite
 RUN $HOME/.poetry/bin/poetry build
 RUN pip install --no-cache-dir --find-links=/app/dist wartracker
 

@@ -138,16 +138,12 @@ description = "A python wrapper for the Discord API"
 name = "discord.py"
 optional = false
 python-versions = ">=3.5.3"
-version = "1.0.0a1634+g7f4c57d"
+version = "1.1.1"
 
 [package.dependencies]
-aiohttp = ">=3.3.0,<3.5.0"
+aiohttp = ">=3.3.0,<3.6.0"
 websockets = ">=6.0,<7.0"
 
-[package.source]
-reference = "7f4c57dd5ad20b7fa10aea485f674a4bc24b9547"
-type = "git"
-url = "https://github.com/Rapptz/discord.py.git"
 [[package]]
 category = "dev"
 description = "the modular source code checker: pep8, pyflakes and co"
@@ -392,7 +388,7 @@ python-versions = "*"
 version = "0.14.0"
 
 [metadata]
-content-hash = "2e1092e2355f536dfe2882fa6b2773035fc4a7c40f26e5c875f748afb912a47c"
+content-hash = "b3a48b280b8aa44b277f42b42371f606fd34a30e71949fa7cf5e49d2bc1ae34f"
 python-versions = "^3.6"
 
 [metadata.hashes]
@@ -409,7 +405,7 @@ chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "
 clashroyale = ["de100a098c2788d30291d52c6085e7c9264fc57f3e221db4857561170b0f809c"]
 click = ["29f99fc6125fbc931b758dc053b3114e55c77a6e4c6c3a2674a2dc986016381d", "f15516df478d5a56180fbf80e68f206010e6d160fc39fa508b65e035fd75130b"]
 colorama = ["05eed71e2e327246ad6b38c540c4a3117230b19679b875190486ddd2d721422d", "f8ac84de7840f5b9c4e3347b3c1eaa50f7e49c2b07596221daec5edaabbd7c48"]
-"discord.py" = []
+"discord.py" = ["d0ab22f1fee1fcc02ac50a67ff49a5d1f6d7bc7eba77e34e35bd160b3ad3d7e8"]
 flake8 = ["6a35f5b8761f45c5513e3405f110a86bea57982c3b75b766ce7b65217abe1670", "c01f8a3963b3571a8e6bd7a4063359aff90749e160778e03817cd9b71c9e07d2"]
 idna = ["c357b3f628cf53ae2c4c05627ecc484553142ca23264e593d327bcde5e9c3407", "ea8b7f6188e6fa117537c3df7da9fc686d485087abf6ac197f9c46432f7e4a3c"]
 idna-ssl = ["a933e3bb13da54383f9e8f35dc4f9cb9eb9b3b78c6b36f311254d6d0d92c6c7c"]

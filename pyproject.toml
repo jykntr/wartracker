@@ -9,7 +9,7 @@ python = "^3.6"
 pendulum = "^2.0"
 pymongo = "^3.7"
 click = "^6.7"
-"discord.py" = { git = "https://github.com/Rapptz/discord.py.git", branch = "rewrite" }
+"discord.py" = "^1.1"
 apscheduler = "^3.5"
 clashroyale = "^4.0"
 yaspin = "^0.14.0"
